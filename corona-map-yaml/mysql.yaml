@@ -1,0 +1,58 @@
+# mysql.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  selector:
+    app: mysql
+  ports:
+  - port: 3306
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.6
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql-password
+                key: password
+          - name: MYSQL_DATABASE
+            value: coronamap
+          - name: MYSQL_USER
+            value: sosinnmi
+          - name: MYSQL_ROOT_HOST
+            value: '%'
+          - name: MYSQL_PASSWORD
+            value: dktlrtm3
+        ports:
+        - name: mysql
+          containerPort: 3306
+        volumeMounts:
+          - name: nfs-volume
+            mountPath: /var/lib/mysql
+            # mountPath: /
+      volumes:
+        - name: nfs-volume
+          persistentVolumeClaim:
+            claimName: nfs-pvc

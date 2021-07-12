@@ -1,0 +1,42 @@
+# corona-app.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: corona-map
+  labels:
+    app: corona-map
+spec:
+  selector:
+    app: corona-map
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+
+
+---
+
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: corona-map
+spec:
+  schedule: "0,10,15,33 * * * * "
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: corona-map
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: corona-map
+            image: sosinnmi2/coronamap:0.9
+            env:
+              - name: MYSQL_SERVICE_IP # mysql db 서비스IP
+                value: 10.106.97.250
+            ports:
+            - name: corona-map-port
+              containerPort: 5001
