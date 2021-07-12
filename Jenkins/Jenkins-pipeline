@@ -1,0 +1,111 @@
+pipeline {
+    // 스테이지 별로 다른 거
+    agent any
+
+    triggers {
+        pollSCM('*/3 * * * *')
+    }
+
+    stages {
+
+        // 레포지토리를 다운로드 받음
+        stage('Git clone') {
+            agent any
+            
+            steps {
+                echo 'Clonning Repository'
+								// ssh 사용시 ssh clone 주소를 받아와야 한다
+                git url: 'git@gitlab.com:Yess-P/corona-code.git',
+                    branch: 'master',
+                    credentialsId: 'gitlab-ssh'
+                    
+                sh ('git remote set-url origin git@gitlab.com:Yess-P/corona-code.git')
+                }
+                
+        }
+        
+        // Image 빌드
+        stage('Bulid Backend') {
+            agent any
+            steps {
+              echo 'Build Image'
+              script{
+                RELEASE_NOTES = sh (script: """git log --pretty=format:%s -1 """, returnStdout:true)
+                echo ("${RELEASE_NOTES}")
+                
+                docker.withRegistry( 'https://registry.hub.docker.com', 'docker-cred' ) {
+                  image = docker.build("parkes9509/corona:${RELEASE_NOTES}")
+                    }
+                }
+              }
+          } 
+
+        stage('Docker run') {
+          agent any
+
+          steps {
+            echo 'Docker run'
+
+            script {
+                image.run()
+                }
+          }
+        }
+
+        stage('Image push') {
+          steps {
+            echo 'Image push to Docker hub'
+
+            script {
+              docker.withRegistry( 'https://registry.hub.docker.com', 'docker-cred' ) {
+                    image.push("${RELEASE_NOTES}")
+                      }
+              }
+            }    
+          }
+
+        stage('GitOps Checkout') {
+          agent any
+            steps {
+                git url: 'git@gitlab.com:Yess-P/argo-yaml.git',
+                    branch: "master",
+                    credentialsId: 'gitlab-ssh'
+                   
+                sh"ls"
+                
+                dir("mychart/"){
+                    script{ datas = readYaml file: 'values.yaml' 
+                        datas.version = RELEASE_NOTES
+                    }
+                
+                    echo datas.version
+                    
+                    sh "rm values.yaml"
+                    
+                    script{ writeYaml file: 'values.yaml', data: datas}
+                    
+                    sh"cat values.yaml"
+                }
+                
+
+				// credentialID    = manage_credential 에서 등록한 ssh ID
+				// keyFileVariable = 임시로 저장할 폴더 이름
+                withCredentials([sshUserPrivateKey(credentialsId: 'gitlab-ssh', keyFileVariable: 'id_rsa_gitlab_argocd')]){
+                    sh('git remote set-url origin git@gitlab.com:Yess-P/argo-yaml.git')
+
+                    echo("working!")
+                //     // sh('eval "$(ssh-agent -s)')
+                //     // sh('ssh-add ~/.ssh/id_rsa')
+    
+                    sh("git add .")
+                    sh("git commit -m '${RELEASE_NOTES}'")
+                    sh("git push -u origin master")
+                     }             
+
+
+
+            }
+        }
+
+    }
+}
