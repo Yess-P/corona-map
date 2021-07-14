@@ -10,3 +10,4 @@ Click for details
 ***
 ![corona-map-mindmap](https://user-images.githubusercontent.com/79623220/125581263-7cc9e557-f36c-4e6f-a3c9-8a455c87e1c9.jpg)
 ***
+![corona-map](https://user-images.githubusercontent.com/79623220/125633862-77677e2d-be3e-46c5-aba0-206a09461988.jpg)
