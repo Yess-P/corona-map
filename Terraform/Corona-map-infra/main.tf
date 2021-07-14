@@ -8,7 +8,6 @@ module vpc {
 
 # EKS Cluster
 resource "aws_eks_cluster" "EKS-CLUSTER" {
-  # CloudWatch Logs로 각 log들을 전송, 추가비용 발생
   # enable_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
   name        = var.eks_cluster_name
@@ -53,7 +52,6 @@ resource "aws_iam_role" "eks" {
 }
 
 data "tls_certificate" "cert" {
-  # cluster가 가지고 있는 oidc issuer
   url             = aws_eks_cluster.EKS-CLUSTER.identity[0].oidc[0].issuer
 }
 
