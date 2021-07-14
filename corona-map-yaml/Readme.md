@@ -1,6 +1,6 @@
-## Kubernetes diagram
+# Kubernetes diagram
 
-실제 Kubernetes 상에서 배포되는 corona-map의 yaml 입니다
+> 실제 Kubernetes 상에서 배포되는 corona-map의 yaml 입니다
 
 Click for details
 
