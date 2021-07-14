@@ -6,7 +6,7 @@ module vpc {
   zones                 = ["A","C"]
 }
 
-#Cluster
+# EKS Cluster
 resource "aws_eks_cluster" "EKS-CLUSTER" {
   # CloudWatch Logs로 각 log들을 전송, 추가비용 발생
   # enable_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
@@ -59,7 +59,6 @@ data "tls_certificate" "cert" {
 
 resource "aws_iam_openid_connect_provider" "openid"{
   client_id_list  = ["sts.amazonaws.com"]
-  # tls 인증서가 가지고 있는 지문
   thumbprint_list = [data.tls_certificate.cert.certificates[0].sha1_fingerprint]
   url             = aws_eks_cluster.EKS-CLUSTER.identity[0].oidc[0].issuer
 }
@@ -118,7 +117,7 @@ resource "aws_security_group_rule" "cluster_private_access" {
 
 
 
-######### node_group #########
+# EKS-Node
 resource "aws_launch_template" "lt-ng"{
   name                  = "lt-ng"
   instance_type         = var.instance
@@ -154,39 +153,6 @@ resource "aws_eks_node_group" "private"{
     aws_launch_template.lt-ng
   ]
 }
-
-# resource "aws_eks_node_group" "public"{
-#   cluster_name          = aws_eks_cluster.EKS-CLUSTER.name
-#   node_group_name       = "public"
-#   node_role_arn        = aws_iam_role.node-group.arn
-#   subnet_ids            = module.vpc.public_subnet
-
-#   labels                = {
-#     "type" = "public"
-#   }
-
-#   instance_types        = []
-
-#   launch_template {
-#     name                = aws_launch_template.lt-ng.name
-#     version             = "1"
-#   }
-
-#   scaling_config {
-#     desired_size        = 1
-#     max_size            = 3
-#     min_size            = 1
-#   }
-
-#   depends_on = [
-#     aws_iam_role_policy_attachment.node-group-AmazonEKSWorkerNodePolicy,
-#     aws_iam_role_policy_attachment.node-group-AmazonEKS_CNI_Policy,
-#     aws_iam_role_policy_attachment.node-group-AmazonEC2ContainerRegistryReadOnly,
-#     aws_launch_template.lt-ng
-#   ]
-
-# }
-
 
 resource "aws_iam_role" "node-group"{
   name = "eks-node-group-role"
@@ -326,7 +292,7 @@ resource "aws_security_group" "eks_nodes" {
   }
 }
 
-# bastion
+# Bastion
 resource "aws_security_group" "EKS-Bastion-SG"{
     name = "EKS-Bastion-SG"
     vpc_id =  module.vpc.vpc_id
@@ -367,7 +333,6 @@ resource "aws_instance" "EKS-Bastion"{
         type                    = "ssh"
         host                    = self.public_ip
         user                    = "ec2-user"
-        # 현재 테라폼 코드가 존재하는 위치
         private_key             = file("${path.module}/terraform-key.pem")
         timeout                 = "2m"
         agent                   = false
@@ -406,7 +371,7 @@ resource "aws_instance" "EKS-Bastion"{
         }
 }
 
-
+# Jenkins Master
 resource "aws_security_group" "EKS-Jenkins-SG"{
     name    = "EKS-Jenkins-SG"
     vpc_id  =  module.vpc.vpc_id
@@ -459,7 +424,7 @@ resource "aws_instance" "EKS-Jenkins"{
 }
 
 
-##########Jenkins Slave###########
+# Jenkins Slave
 resource "aws_security_group" "EKS-Jenkins-Slave-SG"{
     name    = "EKS-Jenkins-Slave-SG"
     vpc_id  =  module.vpc.vpc_id
