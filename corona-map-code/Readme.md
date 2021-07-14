@@ -3,5 +3,4 @@
 
 <br>
 
-
-![KakaoTalk_20210714_171406173](https://user-images.githubusercontent.com/79623220/125598162-add24128-c325-4060-bc89-586c852927f0.png)
+![corona-map-real-last](https://user-images.githubusercontent.com/79623220/125631103-78bacab1-ef1b-467c-94eb-5300854e6190.png)
