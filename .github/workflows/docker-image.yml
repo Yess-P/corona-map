@@ -31,4 +31,5 @@ jobs:
           context: parkes9509/corona
           file: corona-map/corona-map-code/Dockerfile
           push: true
+          tags: parkes9509/corona:latest
 
