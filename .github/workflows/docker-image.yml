@@ -28,7 +28,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
-          context: corona-map/corona-map-code
+          context: Yess-P/corona-map/corona-map-code
           file: ./Dockerfile
           push: true
           tags: parkes9509/corona:latest
