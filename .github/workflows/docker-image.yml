@@ -29,6 +29,6 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: parkes9509/corona
-          file: ./Dockerfile
+          file: corona-map/corona-map-code/Dockerfile
           push: true
 
