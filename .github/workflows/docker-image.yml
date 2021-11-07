@@ -31,6 +31,4 @@ jobs:
           context: parkes9509/corona
           file: ./Dockerfile
           push: true
-          tags: ${{ steps.docker_meta.outputs.tags }}
-          labels: ${{ steps.docker_meta.outputs.labels }}
 
