@@ -15,6 +15,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         name: Checkout
+        
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: parkes9509/corona
     
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -30,5 +36,6 @@ jobs:
         with:
           context: ./corona-map-code
           push: true
-          tags: parkes9509/corona:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
